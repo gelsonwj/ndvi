@@ -13,5 +13,5 @@ def conecta_bd():
     conexao.close()
     return poligonos
 
-poligonos = conecta_bd()
-print(poligonos['roi_coords'])
+#poligonos = conecta_bd()
+#print(poligonos['roi_coords'])

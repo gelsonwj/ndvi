@@ -1,5 +1,5 @@
-from ee import Geometry, ImageCollection, Filter, Feature, Image, Initialize, Authenticate
-Authenticate()
+from ee import Geometry, ImageCollection, Filter, Feature, Image, Initialize
+#Authenticate()
 Initialize()
 from os import listdir, path, rename, remove
 from requests import get
@@ -82,7 +82,7 @@ class SentinelImageProcessor:
 
 
     def get_last_archive(self): #seleciona o último arquivo da pasta para que ele seja selecionado pra ser renomeado dentro da pasta onde foi baixado.
-        pasta = 'Y:\\DADOS\\TEMP\\T. I\\NDVI_novo\\{}\\{}\\{}\\{}' .format(self.data_image.split('-')[-1], self.proprietario, self.fazenda, self.talhao) #self.data_image.split('')[-1] seleciona o ano
+        pasta = 'D:\\GitHub\\ndvi\\{}\\{}\\{}\\{}' .format(self.data_image.split('-')[-1], self.proprietario, self.fazenda, self.talhao) #self.data_image.split('')[-1] seleciona o ano
         arquivos = listdir(pasta)
 
         # Remove pastas da lista
@@ -112,8 +112,8 @@ class SentinelImageProcessor:
         response = get(url)
     
         if response.status_code == 200:
-            output_zip_path = 'Y:\\DADOS\\TEMP\\T. I\\NDVI_novo\\zipfile.zip' 
-            output_tif_path = 'Y:\\DADOS\\TEMP\\T. I\\NDVI_novo\\{}\\{}\\{}\\{}' .format(ano, self.proprietario, self.fazenda, self.talhao) #local onde a imagem ndvi será extraída
+            output_zip_path = 'D:\\GitHub\\ndvi\\zipfile.zip' 
+            output_tif_path = 'D:\\GitHub\\ndvi\\{}\\{}\\{}\\{}' .format(ano, self.proprietario, self.fazenda, self.talhao) #local onde a imagem ndvi será extraída
 
             with open(output_zip_path, 'wb') as f:
                 f.write(response.content)

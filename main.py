@@ -3,7 +3,7 @@ import ast
 from controle import *
 
 def main():
-    poligonos = controle.conecta_bd()
+    poligonos = conecta_bd()
 
     farm = str(input("Digite o nome da fazenda para obter o NDVI: "))
     poligonos = poligonos.loc[(poligonos['fazenda'] == farm)] #& (poligonos['talhao'] == 'T2')]
