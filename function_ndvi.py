@@ -1,4 +1,5 @@
-from ee import Geometry, ImageCollection, Filter, Feature, Image, Initialize
+from ee import Geometry, ImageCollection, Filter, Feature, Image, Initialize, Authenticate
+Authenticate()
 Initialize()
 from os import listdir, path, rename, remove
 from requests import get

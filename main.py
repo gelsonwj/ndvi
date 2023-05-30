@@ -3,7 +3,6 @@ import ast
 from controle import *
 
 def main():
-    controle = Controle()
     poligonos = controle.conecta_bd()
 
     farm = str(input("Digite o nome da fazenda para obter o NDVI: "))
