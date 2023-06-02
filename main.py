@@ -15,7 +15,7 @@ def get_screen_size():
     return width, height
 
 def processar():
-    farm = entry_farm.get()
+    farm = combobox_farm.get()
     start_date = entry_start_date.get()
     end_date = entry_end_date.get()
 
@@ -27,27 +27,38 @@ def processar():
         warning_message.set("Formato de data inválido!")
         return
 
-    poligonos = conecta_bd()
-    poligonos = poligonos.loc[(poligonos['fazenda'] == farm)]
+    if start_date > end_date:
+        warning_message.set("A data final não pode ser menor que a data inicial")
+        return
     
-    for index, row in poligonos.iterrows():
-        roi_coords_str = row['roi_coords']
-        roi_coords = ast.literal_eval(roi_coords_str)
-        fazenda = row['fazenda']
-        talhao = row['talhao']
-        proprietario = row['proprietario']
-        processor = SentinelImageProcessor(roi_coords, start_date, end_date, fazenda, talhao, proprietario)
-        
-        try:
-            image_roi = processor.process_images()
-        except IndexError:
-            # Lidar com erro se o intervalo de datas for pequeno
-            warning_message.set("Erro: Ajuste o intervalo de datas para obter a imagem.")
-            return
+    poligonos = conecta_bd() 
 
-        processor.export_image(image_roi, exported_label, root)
-        exported_label_text = "\n".join(message_history)  # Concatena todas as mensagens do histórico
-        exported_label.config(text=exported_label_text, fg="green")
+    if farm == "Todas":
+        farms = ["Esperança", "Harmonia", "Primavera"]
+    else:
+        farms = [farm]
+
+    for farm in farms:
+        farm_poligonos = poligonos.loc[(poligonos['fazenda'] == farm)]
+
+        for index, row in farm_poligonos.iterrows():
+            roi_coords_str = row['roi_coords']
+            roi_coords = ast.literal_eval(roi_coords_str)
+            fazenda = row['fazenda']
+            talhao = row['talhao']
+            proprietario = row['proprietario']
+            processor = SentinelImageProcessor(roi_coords, start_date, end_date, fazenda, talhao, proprietario)
+
+            try:
+                image_roi = processor.process_images()
+            except IndexError:
+                # Lidar com erro se o intervalo de datas for pequeno
+                warning_message.set("Erro: Ajuste o intervalo de datas para obter a imagem.")
+                return
+
+            processor.export_image(image_roi, exported_label, root)
+            exported_label_text = "\n".join(message_history)  # Concatena todas as mensagens do histórico
+            exported_label.config(text=exported_label_text, fg="green")
 
     warning_message.set("")  # Limpar a mensagem de aviso
 
@@ -72,11 +83,12 @@ root.geometry(f"{new_width}x{new_height}+{x_position}+{y_position}")
 style = ttk.Style()
 style.configure("TEntry", padding=5, relief="flat")
 
-label_farm = tk.Label(root, text="Digite o nome da fazenda para obter o NDVI:")
+label_farm = tk.Label(root, text="Selecione a fazenda para obter o NDVI:")
 label_farm.pack()
 
-entry_farm = ttk.Entry(root)
-entry_farm.pack()
+farms = ["Esperança", "Harmonia", "Primavera", "Todas"]
+combobox_farm = ttk.Combobox(root, values=farms)
+combobox_farm.pack()
 
 label_dates = tk.Label(root, text="Digite o intervalo de datas (mínimo de 10 dias):")
 label_dates.pack()
