@@ -6,6 +6,7 @@ from requests import get
 from zipfile import ZipFile
 from datetime import datetime
 
+message_history = []
 
 class SentinelImageProcessor:
     def __init__(self, roi_coords, start_date, end_date, fazenda, talhao, proprietario): 
@@ -100,8 +101,7 @@ class SentinelImageProcessor:
             print("A pasta está vazia.")
         
 
-    def export_image(self, image_roi): #baixa a imagem do polígono
-        #masked_image = image_roi.updateMask(image_roi.select('NDVI').gt(0))
+    def export_image(self, image_roi, exported_label, root):
         ano = self.data_image.split('-')[-1]
         url = image_roi.select('NDVI').getDownloadUrl({
             'scale': 10,
@@ -110,33 +110,37 @@ class SentinelImageProcessor:
         })
 
         response = get(url)
-    
+
         if response.status_code == 200:
-            output_zip_path = 'D:\\GitHub\\ndvi\\zipfile.zip' 
-            output_tif_path = 'D:\\GitHub\\ndvi\\{}\\{}\\{}\\{}' .format(ano, self.proprietario, self.fazenda, self.talhao) #local onde a imagem ndvi será extraída
+            output_zip_path = 'D:\\GitHub\\ndvi\\zipfile.zip'
+            output_tif_path = 'D:\\GitHub\\ndvi\\{}\\{}\\{}\\{}'.format(ano, self.proprietario, self.fazenda, self.talhao)
 
             with open(output_zip_path, 'wb') as f:
                 f.write(response.content)
-            
+
             # Extrair o arquivo TIFF do zip
             with ZipFile(output_zip_path, 'r') as zip_ref:
                 zip_ref.extractall(output_tif_path)
-            
+
             # Renomear o arquivo TIFF extraído
             arquivo = self.get_last_archive()
-            extracted_tif_path = output_tif_path + "\\{}" .format(arquivo)
-            renamed_tif_path = output_tif_path + "\\{}_{}.tif" .format(self.data_image, self.talhao) #dd_mm_aaaa_talhao
+            extracted_tif_path = output_tif_path + "\\{}".format(arquivo)
+            renamed_tif_path = output_tif_path + "\\{}_{}.tif".format(self.data_image, self.talhao)  # dd_mm_aaaa_talhao
 
-            try:#caso o arquivo com o nome já existe, então exclui ele e atualiza com o mais novo.
+            try:
+                # Caso o arquivo com o nome já exista, então exclui ele e atualiza com o mais novo.
                 rename(extracted_tif_path, renamed_tif_path)
             except FileExistsError:
                 remove(renamed_tif_path)  # Remove o arquivo existente
                 rename(extracted_tif_path, renamed_tif_path)
-            
+
             # Remover o arquivo zip
             remove(output_zip_path)
-            
-            print("Imagem exportada com sucesso para:", renamed_tif_path)
+
+            exported_label_text = "Imagem exportada com sucesso para: {}\n📅 Data da imagem: {}".format(renamed_tif_path, self.data_image)
+            message_history.append(exported_label_text)
+            root.update()  # Atualiza a interface gráfica para exibir a mensagem imediatamente
         else:
-            print("Falha ao exportar a imagem. Status de resposta:", response.status_code)  
+            print("Falha ao exportar a imagem. Status de resposta:", response.status_code)
+  
     

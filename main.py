@@ -1,34 +1,100 @@
-from function_ndvi import *
+import tkinter as tk
+from tkinter import ttk
 import ast
+from datetime import datetime
+from function_ndvi import *
 from controle import *
 
-def main():
+
+# Função para obter a largura e altura da tela do dispositivo
+def get_screen_size():
+    root = tk.Tk()
+    width = root.winfo_screenwidth()
+    height = root.winfo_screenheight()
+    root.destroy()
+    return width, height
+
+def processar():
+    farm = entry_farm.get()
+    start_date = entry_start_date.get()
+    end_date = entry_end_date.get()
+
+    # Converter as datas para o formato aaaa-mm-dd
+    try:
+        start_date = datetime.strptime(start_date, "%d/%m/%Y").strftime("%Y-%m-%d")
+        end_date = datetime.strptime(end_date, "%d/%m/%Y").strftime("%Y-%m-%d")
+    except ValueError:
+        warning_message.set("Formato de data inválido!")
+        return
+
     poligonos = conecta_bd()
-
-    farm = str(input("Digite o nome da fazenda para obter o NDVI: "))
-    poligonos = poligonos.loc[(poligonos['fazenda'] == farm)] #& (poligonos['talhao'] == 'T2')]
+    poligonos = poligonos.loc[(poligonos['fazenda'] == farm)]
     
-    print("Digite o intervalo de data de que a imagem seja (mínimo de 10 dias), no formato aaaa-mm-dd")
-    data_ini = str(input("Digite a data inicial, no formato aaaa-mm-dd: "))
-    data_final = str(input("Digite a data final, no formato aaaa-mm-dd: "))
-
     for index, row in poligonos.iterrows():
-        roi_coords_str= row['roi_coords']
-        roi_coords = ast.literal_eval(roi_coords_str) #biblioteca necessária para converter str para lista sem perder a formatação da coordenada (ee.geometry.polygon não aceita string)
+        roi_coords_str = row['roi_coords']
+        roi_coords = ast.literal_eval(roi_coords_str)
         fazenda = row['fazenda']
         talhao = row['talhao']
         proprietario = row['proprietario']
-        processor = SentinelImageProcessor(roi_coords, data_ini, data_final, fazenda, talhao, proprietario)
-        image_roi = processor.process_images()
+        processor = SentinelImageProcessor(roi_coords, start_date, end_date, fazenda, talhao, proprietario)
+        
+        try:
+            image_roi = processor.process_images()
+        except IndexError:
+            # Lidar com erro se o intervalo de datas for pequeno
+            warning_message.set("Erro: Ajuste o intervalo de datas para obter a imagem.")
+            return
 
-        processor.export_image(image_roi)
-    
-if __name__ == "__main__":
-    main()
+        processor.export_image(image_roi, exported_label, root)
+        exported_label_text = "\n".join(message_history)  # Concatena todas as mensagens do histórico
+        exported_label.config(text=exported_label_text, fg="green")
 
-    input("Pressione Enter para fechar o programa...")
-'''
-roi_coords = [[-54.48707864894492,-21.73660745069606],[-54.48436529569182,-21.73708612766352],[-54.48279945411046,-21.73735021301333],[-54.48158601256098,-21.73674759944548],[-54.48098925004302,-21.73635896833387],[-54.47959688990941,-21.734558500359],[-54.47757850143851,-21.7315917751563],[-54.48198141914839,-21.72971447365351],[-54.48584171818774,-21.72808633032107],[-54.48600718380892,-21.72948018458605],[-54.48650189180762,-21.73282315958958],[-54.48667203986014,-21.73489702752682]]
-fazenda = 'Pão e Mel'
-talhao = 'LOTE P11'
-'''
+    warning_message.set("")  # Limpar a mensagem de aviso
+
+root = tk.Tk()
+root.title("Obter imagens NDVI")
+
+# Obter a largura e altura da tela do dispositivo
+screen_width, screen_height = get_screen_size()
+
+# Definir a nova largura e altura da janela principal com base na porcentagem desejada
+new_width = int(screen_width * 0.4)
+new_height = int(screen_height * 0.28)
+
+# Centralizar a janela principal na tela do dispositivo
+x_position = (screen_width - new_width) // 2
+y_position = (screen_height - new_height) // 2
+
+# Definir a geometria da janela principal
+root.geometry(f"{new_width}x{new_height}+{x_position}+{y_position}")
+
+# Adicionar bordas arredondadas usando ttk
+style = ttk.Style()
+style.configure("TEntry", padding=5, relief="flat")
+
+label_farm = tk.Label(root, text="Digite o nome da fazenda para obter o NDVI:")
+label_farm.pack()
+
+entry_farm = ttk.Entry(root)
+entry_farm.pack()
+
+label_dates = tk.Label(root, text="Digite o intervalo de datas (mínimo de 10 dias):")
+label_dates.pack()
+
+entry_start_date = ttk.Entry(root)
+entry_start_date.pack()
+
+entry_end_date = ttk.Entry(root)
+entry_end_date.pack()
+
+button = tk.Button(root, text="Processar", command=processar)
+button.pack(pady=10)
+
+exported_label = tk.Label(root, text="", fg="green")
+exported_label.pack()
+
+warning_message = tk.StringVar()
+warning_label = tk.Label(root, textvariable=warning_message, fg="red")
+warning_label.pack()
+
+root.mainloop()
