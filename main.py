@@ -6,7 +6,6 @@ from function_ndvi import *
 from controle import *
 
 
-# Função para obter a largura e altura da tela do dispositivo
 def get_screen_size():
     root = tk.Tk()
     width = root.winfo_screenwidth()
@@ -14,12 +13,12 @@ def get_screen_size():
     root.destroy()
     return width, height
 
+
 def processar():
     farm = combobox_farm.get()
     start_date = entry_start_date.get()
     end_date = entry_end_date.get()
 
-    # Converter as datas para o formato aaaa-mm-dd
     try:
         start_date = datetime.strptime(start_date, "%d/%m/%Y").strftime("%Y-%m-%d")
         end_date = datetime.strptime(end_date, "%d/%m/%Y").strftime("%Y-%m-%d")
@@ -30,8 +29,8 @@ def processar():
     if start_date > end_date:
         warning_message.set("A data final não pode ser menor que a data inicial")
         return
-    
-    poligonos = conecta_bd() 
+
+    poligonos = conecta_bd()
 
     if farm == "Todas":
         farms = ["Esperança", "Harmonia", "Primavera"]
@@ -39,11 +38,10 @@ def processar():
         farms = [farm]
 
     for farm in farms:
-        farm_poligonos = poligonos.loc[(poligonos['fazenda'] == farm)]
+        farm_poligonos = poligonos.loc[poligonos['fazenda'] == farm]
 
-        for index, row in farm_poligonos.iterrows():
-            roi_coords_str = row['roi_coords']
-            roi_coords = ast.literal_eval(roi_coords_str)
+        for _, row in farm_poligonos.iterrows():
+            roi_coords = ast.literal_eval(row['roi_coords'])
             fazenda = row['fazenda']
             talhao = row['talhao']
             proprietario = row['proprietario']
@@ -52,34 +50,29 @@ def processar():
             try:
                 image_roi = processor.process_images()
             except IndexError:
-                # Lidar com erro se o intervalo de datas for pequeno
                 warning_message.set("Erro: Ajuste o intervalo de datas para obter a imagem.")
                 return
 
             processor.export_image(image_roi, exported_label, root)
-            exported_label_text = "\n".join(message_history)  # Concatena todas as mensagens do histórico
+            exported_label_text = "\n".join(message_history)
             exported_label.config(text=exported_label_text, fg="green")
 
-    warning_message.set("")  # Limpar a mensagem de aviso
+    warning_message.set("")
+
 
 root = tk.Tk()
 root.title("Obter imagens NDVI")
 
-# Obter a largura e altura da tela do dispositivo
 screen_width, screen_height = get_screen_size()
 
-# Definir a nova largura e altura da janela principal com base na porcentagem desejada
 new_width = int(screen_width * 0.4)
 new_height = int(screen_height * 0.28)
 
-# Centralizar a janela principal na tela do dispositivo
 x_position = (screen_width - new_width) // 2
 y_position = (screen_height - new_height) // 2
 
-# Definir a geometria da janela principal
 root.geometry(f"{new_width}x{new_height}+{x_position}+{y_position}")
 
-# Adicionar bordas arredondadas usando ttk
 style = ttk.Style()
 style.configure("TEntry", padding=5, relief="flat")
 
