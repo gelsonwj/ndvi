@@ -66,7 +66,7 @@ root.title("Obter imagens NDVI")
 screen_width, screen_height = get_screen_size()
 
 new_width = int(screen_width * 0.4)
-new_height = int(screen_height * 0.28)
+new_height = int(screen_height * 0.46)
 
 x_position = (screen_width - new_width) // 2
 y_position = (screen_height - new_height) // 2
