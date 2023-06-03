@@ -76,21 +76,27 @@ root.geometry(f"{new_width}x{new_height}+{x_position}+{y_position}")
 style = ttk.Style()
 style.configure("TEntry", padding=5, relief="flat")
 
-label_farm = tk.Label(root, text="Selecione a fazenda para obter o NDVI:")
+label_farm = tk.Label(root, text="Selecione a fazenda para obter o NDVI", font=("TkDefaultFont", 11, "bold"))
 label_farm.pack()
 
 farms = ["Esperança", "Harmonia", "Primavera", "Todas"]
 combobox_farm = ttk.Combobox(root, values=farms)
-combobox_farm.pack()
+combobox_farm.pack(pady=(0, 15))  # Adiciona espaçamento leve após a caixa
 
-label_dates = tk.Label(root, text="Digite o intervalo de datas (mínimo de 10 dias):")
+label_dates = tk.Label(root, text="Digite o intervalo de datas (pelo menos 10 dias)", font=("TkDefaultFont", 11, "bold"))
 label_dates.pack()
 
-entry_start_date = ttk.Entry(root)
+entry_start_label = tk.Label(root, text="Data Inicial:", font=("TkDefaultFont", 10))
+entry_start_label.pack()
+
+entry_start_date = ttk.Entry(root, width=22)  # Definir a largura do campo de entrada de datas
 entry_start_date.pack()
 
-entry_end_date = ttk.Entry(root)
-entry_end_date.pack()
+entry_end_label = tk.Label(root, text="Data Final:", font=("TkDefaultFont", 10))
+entry_end_label.pack()
+
+entry_end_date = ttk.Entry(root, width=22)  # Definir a largura do campo de entrada de datas
+entry_end_date.pack(pady=(0, 15))  # Adiciona espaçamento leve após a caixa
 
 button = tk.Button(root, text="Processar", command=processar)
 button.pack(pady=10)
