@@ -1,0 +1,4 @@
+ignore/
+.env
+get_NDVI_images
+build
