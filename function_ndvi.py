@@ -1,5 +1,4 @@
 from ee import Geometry, ImageCollection, Filter, Feature, Image, Initialize
-#Authenticate()
 Initialize()
 from os import listdir, path, rename, remove
 from requests import get
@@ -75,10 +74,6 @@ class SentinelImageProcessor:
         self.data_image = datetime.strptime(selected_date, "%Y-%m-%d").strftime("%d-%m-%Y")
         print("Data da imagem 📅:", self.data_image)
 
-        #cloud_percentage = image_roi.get('CLOUDY_PIXEL_PERCENTAGE').getInfo()
-
-        #print("☁ Percentual de Nuvem ☁:", cloud_percentage, "%")
-        #DATATAKE_IDENTIFIER	
         return image_roi
 
 
@@ -86,13 +81,13 @@ class SentinelImageProcessor:
         pasta = 'D:\\GitHub\\ndvi\\{}\\{}\\{}\\{}' .format(self.data_image.split('-')[-1], self.proprietario, self.fazenda, self.talhao) #self.data_image.split('')[-1] seleciona o ano
         arquivos = listdir(pasta)
 
-        # Remove pastas da lista
+        # Remove pastas da lista.
         arquivos = [arquivo for arquivo in arquivos if path.isfile(path.join(pasta, arquivo))]
 
         # Ordena a lista de arquivos com base na data de modificação
         arquivos = sorted(arquivos, key=lambda x: path.getmtime(path.join(pasta, x)), reverse=True)
 
-        # Obtém o nome do arquivo mais recente
+        # Obtém o nome do arquivo mais recente.
         if len(arquivos) > 0:
             arquivo_recente = arquivos[0]
             print("Arquivo mais recente:", arquivo_recente)
